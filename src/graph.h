@@ -145,9 +145,9 @@ struct Edge {
   };
 
   Edge() : rule_(NULL), pool_(NULL), dyndep_(NULL), env_(NULL),
-           mark_(VisitNone), outputs_ready_(false), deps_loaded_(false),
-           deps_missing_(false), implicit_deps_(0), order_only_deps_(0),
-           implicit_outs_(0) {}
+           mark_(VisitNone), run_time_ms_(0), critical_time_(0),
+           outputs_ready_(false), deps_loaded_(false), deps_missing_(false),
+           implicit_deps_(0), order_only_deps_(0), implicit_outs_(0) {}
 
   /// Return true if all inputs' in-edges are ready.
   bool AllInputsReady() const;
@@ -170,6 +170,9 @@ struct Edge {
 
   void Dump(const char* prefix="") const;
 
+  uint64_t critical_time() const { return critical_time_; }
+  void set_critical_time(uint64_t critical_time) { critical_time_ = critical_time; }
+
   const Rule* rule_;
   Pool* pool_;
   vector<Node*> inputs_;
@@ -177,6 +180,8 @@ struct Edge {
   Node* dyndep_;
   BindingEnv* env_;
   VisitMark mark_;
+  int run_time_ms_;
+  uint64_t critical_time_;
   bool outputs_ready_;
   bool deps_loaded_;
   bool deps_missing_;
