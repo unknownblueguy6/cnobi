@@ -1,0 +1,12 @@
+flags = -O3 
+
+rule compile
+    command = g++ $flags -c $in -o $out
+
+rule link
+    command = g++ $in -o $out
+
+build hello.o: compile hello.cc
+    flags = -O2
+    
+build hello: link hello.o
