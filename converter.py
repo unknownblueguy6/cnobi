@@ -1,12 +1,42 @@
 import re
 import sys
 
-# Function to parse the build.ninja file and extract the necessary information
-def parse_ninja_file(ninja_file):
+
+def generate_manifest_c(rules, targets, output_manifest_file):
+    with open(output_manifest_file, 'w') as f:
+        f.write('#include "manifest.h"\n\n')
+        
+        # Generate RULEs for compile and link
+        for rule_name, rule_data in rules.items():
+            f.write(f"RULE({rule_name})\n")
+            f.write(f"  .command = START_EVAL L({rule_data['command']}) END_EVAL,\n")
+            f.write("END_RULE\n\n")
+
+        # Generate BINDINGS for flags
+        f.write("Manifest manifest = {\n")
+        f.write("  BINDINGS\n")
+        for rule_name, rule_data in rules.items():
+            for flag_name, flag_value in rule_data['bindings']:
+                f.write(f"    BL({flag_name}, \"{flag_value}\")\n")
+        f.write("  END_BIND,\n\n")
+
+        # Generate EDGES for build targets
+        f.write("  .edges =\n")
+        f.write("    START_EDGE\n")
+        for target in targets:
+            f.write("    {\n")
+            f.write(f"      .rule = &{target['rule']},\n")
+            f.write(f"      .in = START_EVAL L({' '.join(target['dependencies'])}) END_EVAL,\n")
+            f.write(f"      .out = START_EVAL L({target['target']}) END_EVAL,\n")
+            f.write("    },\n")
+        f.write("  END_EDGE\n")
+        f.write("};\n")
+
+def parse_ninja_file(ninja_build_file):
     rules = {}
     targets = []
 
-    with open(ninja_file, 'r') as f:
+    with open(ninja_build_file, 'r') as f:
         lines = f.readlines()
 
     current_rule = None
@@ -52,47 +82,10 @@ def parse_ninja_file(ninja_file):
     
     return rules, targets
 
-# Function to generate the manifest.c file
-def generate_manifest_c(rules, targets, output_file="manifest.c"):
-    with open(output_file, 'w') as f:
-        f.write('#include "manifest.h"\n\n')
-        
-        # Generate RULEs for compile and link
-        for rule_name, rule_data in rules.items():
-            f.write(f"RULE({rule_name})\n")
-            f.write(f"  .command = START_EVAL L({rule_data['command']}) END_EVAL,\n")
-            f.write("END_RULE\n\n")
-
-        # Generate BINDINGS for flags
-        f.write("Manifest manifest = {\n")
-        f.write("  BINDINGS\n")
-        for rule_name, rule_data in rules.items():
-            for flag_name, flag_value in rule_data['bindings']:
-                f.write(f"    BL({flag_name}, \"{flag_value}\")\n")
-        f.write("  END_BIND,\n\n")
-
-        # Generate EDGES for build targets
-        f.write("  .edges =\n")
-        f.write("    START_EDGE\n")
-        for target in targets:
-            f.write("    {\n")
-            f.write(f"      .rule = &{target['rule']},\n")
-            f.write(f"      .in = START_EVAL L({' '.join(target['dependencies'])}) END_EVAL,\n")
-            f.write(f"      .out = START_EVAL L({target['target']}) END_EVAL,\n")
-            f.write("    },\n")
-        f.write("  END_EDGE\n")
-        f.write("};\n")
-
-    print(f"Manifest generated: {output_file}")
-
-# Main function to convert build.ninja to manifest.c
-def convert_ninja_to_manifest(ninja_file, output_file="manifest.c"):
-    rules, targets = parse_ninja_file(ninja_file)
-    generate_manifest_c(rules, targets, output_file)
-
-# Example usage
 if __name__ == "__main__":
-    ninja_file = sys.argv[1] #'build.ninja'  # Path to your build.ninja file
-    output_file = sys.argv[2] #'manifest2.c'  # Desired output file name
-    convert_ninja_to_manifest(ninja_file, output_file)
+    ninja_build_file = sys.argv[1] #'build.ninja'  
+    output_manifest_file = sys.argv[2] #'manifest.c' output manifest file name
+    rules, targets = parse_ninja_file(ninja_build_file)
+    generate_manifest_c(rules, targets, output_manifest_file)
+
 
