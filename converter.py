@@ -1,4 +1,5 @@
 import re
+import sys
 
 # Function to parse the build.ninja file and extract the necessary information
 def parse_ninja_file(ninja_file):
@@ -91,7 +92,7 @@ def convert_ninja_to_manifest(ninja_file, output_file="manifest.c"):
 
 # Example usage
 if __name__ == "__main__":
-    ninja_file = 'build.ninja'  # Path to your build.ninja file
-    output_file = 'manifest2.c'  # Desired output file name
+    ninja_file = sys.argv[1] #'build.ninja'  # Path to your build.ninja file
+    output_file = sys.argv[2] #'manifest2.c'  # Desired output file name
     convert_ninja_to_manifest(ninja_file, output_file)
 
