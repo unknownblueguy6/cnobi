@@ -17,6 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chrono>
+
 
 #include <algorithm>
 #include <cstdlib>
@@ -40,6 +42,7 @@
 #include "build_log.h"
 #include "deps_log.h"
 #include "clean.h"
+#include "cnobi.h"
 #include "command_collector.h"
 #include "debug_flags.h"
 #include "depfile_parser.h"
@@ -66,6 +69,11 @@ void CreateWin32MiniDump(_EXCEPTION_POINTERS* pep);
 #endif
 
 namespace {
+
+bool ShouldUseCNobi(const string& filename) {
+  return (filename.length() > 2 && 
+          filename.substr(filename.length() - 2) == ".c");
+}
 
 struct Tool;
 
@@ -262,6 +270,7 @@ int GuessParallelism() {
 bool NinjaMain::RebuildManifest(const char* input_file, string* err,
                                 Status* status) {
   string path = input_file;
+  // status->Info(path.c_str());
   if (path.empty()) {
     *err = "empty path";
     return false;
@@ -269,8 +278,10 @@ bool NinjaMain::RebuildManifest(const char* input_file, string* err,
   uint64_t slash_bits;  // Unused because this path is only used for lookup.
   CanonicalizePath(&path, &slash_bits);
   Node* node = state_.LookupNode(path);
-  if (!node)
+  if (!node){
+    // status->Info(path.c_str());
     return false;
+  }
 
   Builder builder(&state_, config_, &build_log_, &deps_log_, &disk_interface_,
                   status, start_time_millis_);
@@ -1692,9 +1703,31 @@ NORETURN void real_main(int argc, char** argv) {
     if (options.phony_cycle_should_err) {
       parser_opts.phony_cycle_action_ = kPhonyCycleActionError;
     }
-    ManifestParser parser(&ninja.state_, &ninja.disk_interface_, parser_opts);
+
     string err;
-    if (!parser.Load(options.input_file, &err)) {
+    bool load_success;
+    status->Info("Input file: %s", options.input_file);
+    if (ShouldUseCNobi(options.input_file)) {
+      status->Info("Using CNobi for %s", options.input_file);
+      auto load_start_time = chrono::high_resolution_clock::now();
+      CNobi cnobi(&ninja.state_, parser_opts);
+      load_success = cnobi.Load(options.input_file, &err, nullptr);
+      auto load_end_time = chrono::high_resolution_clock::now();
+      auto load_duration = chrono::duration_cast<chrono::microseconds>(load_end_time - load_start_time).count();
+      fprintf(stderr, "Debug: CNobi Load duration: %ld us\n", load_duration);
+    } else {
+      status->Info("Using ManifestParser for %s", options.input_file);
+      auto load_start_time = chrono::high_resolution_clock::now();
+      ManifestParser parser(&ninja.state_, &ninja.disk_interface_, parser_opts);
+      load_success = parser.Load(options.input_file, &err);
+      auto load_end_time = chrono::high_resolution_clock::now();
+      auto load_duration = chrono::duration_cast<chrono::microseconds>(load_end_time - load_start_time).count();
+      fprintf(stderr, "Debug: ManifestParser Load duration: %ld us\n", load_duration);
+    }
+
+    fprintf(stderr, "Debug: Load success: %d\n", load_success);
+
+    if (!load_success) {
       status->Error("%s", err.c_str());
       exit(1);
     }
@@ -1712,16 +1745,18 @@ NORETURN void real_main(int argc, char** argv) {
       exit((ninja.*options.tool->func)(&options, argc, argv));
 
     // Attempt to rebuild the manifest before building anything else
-    if (ninja.RebuildManifest(options.input_file, &err, status)) {
-      // In dry_run mode the regeneration will succeed without changing the
-      // manifest forever. Better to return immediately.
-      if (config.dry_run)
-        exit(0);
-      // Start the build over with the new manifest.
-      continue;
-    } else if (!err.empty()) {
-      status->Error("rebuilding '%s': %s", options.input_file, err.c_str());
-      exit(1);
+    if (!ShouldUseCNobi(options.input_file)) {
+      if (ninja.RebuildManifest(options.input_file, &err, status)) {
+        // In dry_run mode the regeneration will succeed without changing the
+        // manifest forever. Better to return immediately.
+        if (config.dry_run)
+          exit(0);
+        // Start the build over with the new manifest.
+        continue;
+      } else if (!err.empty()) {
+        status->Error("rebuilding '%s': %s", options.input_file, err.c_str());
+        exit(1);
+      }
     }
 
     ninja.ParsePreviousElapsedTimes();

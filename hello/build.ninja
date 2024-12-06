@@ -1,4 +1,4 @@
-flags = -O3 
+flags = -O3
 
 rule compile
     command = g++ $flags -c $in -o $out
@@ -8,5 +8,9 @@ rule link
 
 build hello.o: compile hello.cc
     flags = -O2
-    
+
 build hello: link hello.o
+
+build hello2.o: compile hello2.cc
+
+build hello2: link hello2.o

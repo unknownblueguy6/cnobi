@@ -50,6 +50,8 @@ struct EvalString {
   std::string Serialize() const;
 
 private:
+  friend struct CNobi;
+
   enum TokenType { RAW, SPECIAL };
   typedef std::vector<std::pair<std::string, TokenType> > TokenList;
   TokenList parsed_;
@@ -70,6 +72,7 @@ struct Rule {
  private:
   // Allow the parsers to reach into this object and fill out its fields.
   friend struct ManifestParser;
+  friend struct CNobi;
 
   std::string name_;
   typedef std::map<std::string, EvalString> Bindings;

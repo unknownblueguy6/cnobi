@@ -13,32 +13,34 @@ struct EvalString_{
 };
 
 struct Binding{
-  const char* val;
-  const struct EvalString_* var;
-};
-
-struct RuleInfo{
-  const char* name;
-  const struct EvalString_* command;
-  const struct EvalString_* in;
-  const struct EvalString_* out;
-  const struct EvalString_* depfile;
-  const struct EvalString_* deps;
-  const struct EvalString_* msvc_deps_prefix;
-  const struct EvalString_* description;
-  const struct EvalString_* dyndep;
-  const struct EvalString_* generator;
-  const struct EvalString_* in_newline;
-  const struct EvalString_* restat;
-  const struct EvalString_* rspfile;
-  const struct EvalString_* rspfile_content;
-  const struct Binding* bindings;
+  const char* key;
+  const struct EvalString_* val;
 };
 
 struct PoolInfo{
   const char* name;
   const int depth;
 };
+
+struct RuleInfo{
+  const char* name;
+  const struct PoolInfo* pool;
+  const struct Binding* bindings;
+  // const struct EvalString_* command;
+  // const struct EvalString_* in;
+  // const struct EvalString_* out;
+  // const struct EvalString_* depfile;
+  // const struct EvalString_* deps;
+  // const struct EvalString_* msvc_deps_prefix;
+  // const struct EvalString_* description;
+  // const struct EvalString_* dyndep;
+  // const struct EvalString_* generator;
+  // const struct EvalString_* in_newline;
+  // const struct EvalString_* restat;
+  // const struct EvalString_* rspfile;
+  // const struct EvalString_* rspfile_content;
+};
+
 
 struct EdgeInfo{
   const struct RuleInfo* rule;
@@ -55,16 +57,15 @@ struct EdgeInfo{
 struct StateInfo{
   const struct Binding* bindings;
   const struct EdgeInfo* edges;
+  const struct StateInfo* include;
+  const struct StateInfo* subninja;
   const struct EvalString_* defaults;
-  const struct PoolInfo* pools;
-  const char** include;
-  const char** subninja;
 };
 
 #define LIT(X) {X, LIT},
 #define VAR(X) {X, VAR},
 #define L(X) {#X, LIT},
-#define V(X) {"$"#X, VAR},
+#define V(X) {#X, VAR},
 
 #define EVAL_NULL {"", END}
 
@@ -72,7 +73,7 @@ struct StateInfo{
 #define END_EVAL EVAL_NULL}
 
 #define BINDINGS .bindings = (const struct Binding[]){
-#define END_BIND {"", START_EVAL END_EVAL}}
+#define END_BIND {"", START_EVAL END_EVAL}},
 
 #define START_EDGE (const struct EdgeInfo[]){
 #define END_EDGE {.rule=0}}
@@ -80,19 +81,21 @@ struct StateInfo{
 #define BL(X, Y) {#X, START_EVAL LIT(Y) END_EVAL},
 #define BV(X, Y) {#X, START_EVAL VAR(Y) END_EVAL},
 
-#define Rule const struct RuleInfo
-#define Pool const struct PoolInfo
-#define Manifest const struct StateInfo
+#define MANIFEST const struct StateInfo manifest
 
-#define RULE(X) Rule X = { \
+#define RULE(X) const struct RuleInfo X = { \
 .name = #X,
 
 #define END_RULE };
 
-#define POOL(X) Pool X = { \
+#define POOL(X) const struct PoolInfo X = { \
 .name = #X,
 
 #define END_POOL };
+
+const struct PoolInfo DEFAULT_POOL = {"", 0};
+const struct PoolInfo CONSOLE_POOL = {"console", 1};
+const struct RuleInfo PHONY_RULE = {"phony"};
 
 #ifdef __cplusplus
 }

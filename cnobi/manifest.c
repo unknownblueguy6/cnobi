@@ -1,20 +1,32 @@
 #include "manifest.h"
 
 RULE(compile)
-  .command = START_EVAL L(g++) V(flags) L(-c) V(in) L(-o) V(out) END_EVAL,
+  BINDINGS
+  {"command", START_EVAL L(g++) V(flags) L(-c) V(in) L(-o) V(out) END_EVAL},
+  END_BIND
 END_RULE
 
 RULE(_link)
-  .command = START_EVAL L(g++) V(in) L(-o) V(out) END_EVAL,
+  BINDINGS
+  {"command", START_EVAL L(g++) V(in) L(-o) V(out) END_EVAL},
+  END_BIND
 END_RULE
 
-Manifest manifest = {
+MANIFEST = {
   BINDINGS
     BL(flags, "-O3")
-  END_BIND,
+  END_BIND
 
   .edges =
     START_EDGE
+    {
+      .rule = &compile,
+      .in = START_EVAL L(hello.cc) END_EVAL,
+      .out = START_EVAL L(hello.o) END_EVAL,
+      BINDINGS
+        BL(flags, "-O2")
+      END_BIND
+    },
     {
       .rule = &_link,
       .in = START_EVAL L(hello.o) END_EVAL,
@@ -22,12 +34,17 @@ Manifest manifest = {
     },
     {
       .rule = &compile,
-      .in = START_EVAL L(hello.cc) END_EVAL,
-      .out = START_EVAL L(hello.o) END_EVAL,
+      .in = START_EVAL L(hello2.cc) END_EVAL,
+      .out = START_EVAL L(hello2.o) END_EVAL,
       BINDINGS
         BL(flags, "-O2")
-        BV(ldflags, "-L$builddir")
-      END_BIND,
+      END_BIND
     },
-    END_EDGE
+    {
+      .rule = &_link,
+      .in = START_EVAL L(hello2.o) END_EVAL,
+      .out = START_EVAL L(hello2) END_EVAL,
+    },
+    END_EDGE,
+  .defaults = START_EVAL L(hello) END_EVAL,
 };
