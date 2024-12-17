@@ -24,7 +24,7 @@ size_t GetPathCount(const struct EvalString_* const* paths) {
 CNobi::CNobi(State* state, ManifestParserOptions parser_opts):
   state_(state), parser_opts_(parser_opts){
     env_ = &state->bindings_;
-    fprintf(stderr, "Debug: CNobi constructor called\n");
+    // fprintf(stderr, "Debug: CNobi constructor called\n");
   }
 
 
@@ -318,15 +318,8 @@ bool CNobi::CompileManifest(const std::string& input_file, const std::string& in
 
 const EvalString* CNobi::ConvertEvalStringArray(const struct EvalString_* eval_array) {
     EvalString* eval_string = new EvalString();
-    bool first = true;
     
     while (eval_array->first) {
-        // Add space between tokens, but not before the first one
-        if (!first) {
-            eval_string->AddText(StringPiece(" "));
-        }
-        first = false;
-
         if (eval_array->second == LIT) {
             eval_string->AddText(StringPiece(eval_array->first));
         } else if (eval_array->second == VAR) {

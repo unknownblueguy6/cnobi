@@ -2,13 +2,13 @@
 
 RULE(compile)
   BINDINGS
-  {"command", EVAL L(g++) V(flags) L(-c) V(in) L(-o) V(out) END},
+  {"command", EVAL L_(g++) V_(flags) L_(-c) V_(in) L_(-o) V(out) END},
   END
 END_RULE
 
 RULE(_link)
   BINDINGS
-  {"command", EVAL L(g++) V(in) L(-o) V(out) END},
+  {"command", EVAL L_(g++) V_(in) L_(-o) V(out) END},
   END
 END_RULE
 

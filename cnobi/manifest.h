@@ -51,8 +51,12 @@ struct StateInfo{
 
 #define LIT(X) {X, LIT},
 #define VAR(X) {X, VAR},
+#define LIT_(X) {X" ", LIT},
+#define VAR_(X) {X, VAR}, {" ", LIT},
 #define L(X) {#X, LIT},
 #define V(X) {#X, VAR},
+#define L_(X) {#X" ", LIT},
+#define V_(X) V(X) {" ", LIT},
 
 #define END 0}
 
