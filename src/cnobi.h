@@ -23,7 +23,8 @@ struct CNobi {
     private:
     bool CompileManifest(const std::string& input_file, const std::string& input_so);
     const Rule* ToRule(const struct RuleInfo*);
-    const EvalString* ToEvalString(const struct EvalString_*, bool convert_entire_array = false);
+    const EvalString* ConvertEvalStringArray(const struct EvalString_* eval_array);
+    // const EvalString* ToEvalString(const struct EvalString_*, bool convert_entire_array = false);
     // const Edge* ToEdge(const struct EdgeInfo*);
 
     State* state_;

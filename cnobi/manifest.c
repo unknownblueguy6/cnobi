@@ -2,49 +2,66 @@
 
 RULE(compile)
   BINDINGS
-  {"command", START_EVAL L(g++) V(flags) L(-c) V(in) L(-o) V(out) END_EVAL},
-  END_BIND
+  {"command", EVAL L(g++) V(flags) L(-c) V(in) L(-o) V(out) END},
+  END
 END_RULE
 
 RULE(_link)
   BINDINGS
-  {"command", START_EVAL L(g++) V(in) L(-o) V(out) END_EVAL},
-  END_BIND
+  {"command", EVAL L(g++) V(in) L(-o) V(out) END},
+  END
 END_RULE
 
 MANIFEST = {
   BINDINGS
     BL(flags, "-O3")
-  END_BIND
+  END,
 
-  .edges =
-    START_EDGE
+  EDGES
     {
       .rule = &compile,
-      .in = START_EVAL L(hello.cc) END_EVAL,
-      .out = START_EVAL L(hello.o) END_EVAL,
+      .in = PATHS
+        EVAL L(hello.cc) END,
+      END,
+      .out = PATHS
+        EVAL L(hello.o) END,
+      END,
       BINDINGS
         BL(flags, "-O2")
-      END_BIND
+      END
     },
     {
       .rule = &_link,
-      .in = START_EVAL L(hello.o) END_EVAL,
-      .out = START_EVAL L(hello) END_EVAL,
+      .in = PATHS
+        EVAL L(hello.o) END,
+      END,
+      .out = PATHS
+        EVAL L(hello) END,
+      END,
     },
     {
       .rule = &compile,
-      .in = START_EVAL L(hello2.cc) END_EVAL,
-      .out = START_EVAL L(hello2.o) END_EVAL,
+      .in = PATHS
+        EVAL L(hello2.cc) END,
+      END,
+      .out = PATHS
+        EVAL L(hello2.o) END,
+      END,
       BINDINGS
         BL(flags, "-O2")
-      END_BIND
+      END
     },
     {
       .rule = &_link,
-      .in = START_EVAL L(hello2.o) END_EVAL,
-      .out = START_EVAL L(hello2) END_EVAL,
+      .in = PATHS
+        EVAL L(hello2.o) END,
+      END,
+      .out = PATHS
+        EVAL L(hello2) END,
+      END,
     },
-    END_EDGE,
-  .defaults = START_EVAL L(hello) END_EVAL,
+    END,
+  .defaults = PATHS
+    EVAL L(hello) END,
+  END,
 };
