@@ -76,7 +76,7 @@ bool CNobi::Load(const std::string& input_file, std::string* err, CNobi* parent)
   if (manifest->edges) {
     // fprintf(stderr, "Debug: Processing edges\n");
     const struct EdgeInfo* edge = manifest->edges;
-    size_t edge_number = 0;
+    // size_t edge_number = 0;
     while (edge->rule) {
       // fprintf(stderr, "Debug: Processing edge %zu\n", edge_number);
 
@@ -266,7 +266,7 @@ bool CNobi::Load(const std::string& input_file, std::string* err, CNobi* parent)
             assert(!edge_->dyndep_->generated_by_dep_loader());
         }
 
-        edge_number++;
+        // edge_number++;
       edge++;
     }
   }
@@ -334,13 +334,13 @@ const EvalString* CNobi::ConvertEvalStringArray(const struct EvalString_* eval_a
 
 const Rule* CNobi::ToRule(const struct RuleInfo* rule_info) {
     if (!rule_info) {
-        fprintf(stderr, "Debug: RuleInfo is NULL\n");
+        // fprintf(stderr, "Debug: RuleInfo is NULL\n");
         return nullptr;
     }
 
     Rule* rule = new Rule(rule_info->name);
     if (!rule) {
-        fprintf(stderr, "Debug: Failed to allocate memory for Rule\n");
+        // fprintf(stderr, "Debug: Failed to allocate memory for Rule\n");
         return nullptr;
     }
 

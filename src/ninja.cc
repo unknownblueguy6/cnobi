@@ -71,7 +71,7 @@ void CreateWin32MiniDump(_EXCEPTION_POINTERS* pep);
 namespace {
 
 bool ShouldUseCNobi(const string& filename) {
-  return (filename.length() > 2 && 
+  return (filename.length() > 2 &&
           filename.substr(filename.length() - 2) == ".c");
 }
 
@@ -1745,18 +1745,16 @@ NORETURN void real_main(int argc, char** argv) {
       exit((ninja.*options.tool->func)(&options, argc, argv));
 
     // Attempt to rebuild the manifest before building anything else
-    if (!ShouldUseCNobi(options.input_file)) {
-      if (ninja.RebuildManifest(options.input_file, &err, status)) {
-        // In dry_run mode the regeneration will succeed without changing the
-        // manifest forever. Better to return immediately.
-        if (config.dry_run)
-          exit(0);
-        // Start the build over with the new manifest.
-        continue;
-      } else if (!err.empty()) {
-        status->Error("rebuilding '%s': %s", options.input_file, err.c_str());
-        exit(1);
-      }
+    if (ninja.RebuildManifest(options.input_file, &err, status)) {
+      // In dry_run mode the regeneration will succeed without changing the
+      // manifest forever. Better to return immediately.
+      if (config.dry_run)
+        exit(0);
+      // Start the build over with the new manifest.
+      continue;
+    } else if (!err.empty()) {
+      status->Error("rebuilding '%s': %s", options.input_file, err.c_str());
+      exit(1);
     }
 
     ninja.ParsePreviousElapsedTimes();
