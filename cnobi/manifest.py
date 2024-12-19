@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 class Manifest:
     """Stores the parsed contents of a build.ninja file."""
     
