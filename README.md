@@ -1,3 +1,7 @@
+# cnobi
+
+To refer to cnobi's readme, check out [cnobi/README.md](cnobi/README.md).
+
 # Ninja
 
 Ninja is a small build system with a focus on speed.
