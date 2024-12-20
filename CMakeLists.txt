@@ -129,6 +129,7 @@ add_library(libninja OBJECT
 	src/build.cc
 	src/clean.cc
 	src/clparser.cc
+	src/cnobi.cc
 	src/dyndep.cc
 	src/dyndep_parser.cc
 	src/debug_flags.cc
