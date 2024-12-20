@@ -1,7 +1,7 @@
 # cnobi - an alternate build dependency graph loader for ninja build system
 
 ## Compiling ninja with cnobi
-Use the configure script to build an executable of ninja, which has cnobi support.
+Use the configure script to build an executable of ninja, which has cnobi support. Don't use cmake, as the ninja executable is made inside a subfolder instead of the root directory.
 
 ```
 $ ./configure.py --bootstrap
@@ -14,7 +14,7 @@ Requires python3.
 1. Clone llvm and generate the build.ninja file:
 
 ```
-$ git clone https://github.com/llvm/llvm-project.git
+$ git clone https://github.com/llvm/llvm-project.git --depth 1
 $ cd llvm-project
 $ cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 ```
